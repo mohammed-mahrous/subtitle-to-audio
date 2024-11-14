@@ -5,14 +5,16 @@ from pysubparser import parser
 from pydub import AudioSegment
 from TransformersProcessor import TransformersProcessor as tts
 
-speakersIds = [i for i in range(0,11)]
+speakersIds = [i for i in range(0,201)]
+print(speakersIds)
+exit
 
 def time_to_ms(time):
   return ((time.hour * 60 + time.minute) * 60 + time.second) * 1000 + time.microsecond / 1000
 
 def generate_audio(path:str, speakerId:int = 0):  
   print("Generating audio file for {} with {}".format(path, "transformers"))      
-
+  currentSpeaker = f"speaker_{speakerId}"
   subtitles = parser.parse(path)
 
   tts_engine = tts()
@@ -43,7 +45,7 @@ def generate_audio(path:str, speakerId:int = 0):
       prev_subtitle = subtitle
       prev_audio_duration_ms = len(audio_segment)
 
-      with open(os.path.splitext(path)[0] + '.wav', 'wb') as out_f:
+      with open(os.path.splitext(path)[0] + f"_{currentSpeaker}"+ '.wav', 'wb') as out_f:
         audio_sum.export(out_f, format='wav')      
 
 if __name__ == "__main__":      

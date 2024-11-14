@@ -15,7 +15,7 @@ class TransformersProcessor:
         audio_array_from_text = self.model.generate(**text_inputs, tgt_lang="arb",speaker_id=10)[0].cpu().numpy().squeeze()
         return audio_array_from_text.astype(np.float32)
 
-    def ProcessAndWriteFile(self,message:str, file_path:str="out_from_text.wav", speakerId:int = 0) -> None:
+    def ProcessAndWriteFile(self,message:str, file_path:str="out_from_text.wav", speakerId:int = 10) -> None:
         
         text_inputs = self.processor(text = message, src_lang="arb", return_tensors="pt").to(self.device)
         audio_array_from_text = self.model.generate(**text_inputs, tgt_lang="arb",speaker_id=speakerId)[0].cpu().numpy().squeeze()
