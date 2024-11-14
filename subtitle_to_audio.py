@@ -17,28 +17,29 @@ def generate_audio(path):
   
   audio_sum = AudioSegment.empty()   
   
-  with tempfile.TemporaryDirectory() as tmpdirname:          
-    print('created temporary directory', tmpdirname)            
-
-    temp_file_path = os.path.join(tmpdirname, "temp.wav")
-    prev_subtitle = None
-    prev_audio_duration_ms = 0
-    for subtitle in subtitles:   
-      tts_engine.ProcessAndWriteFile(subtitle.text, temp_file_path)
-
-      audio_segment = AudioSegment.from_wav(temp_file_path)         
-
-      print(subtitle.start, subtitle.text)
+  tempDir = "test/tempFolder"
       
-      if prev_subtitle is None:
+  print('temporary directory', tempDir)            
+
+  temp_file_path = os.path.join(tempDir, "temp.wav")
+  prev_subtitle = None
+  prev_audio_duration_ms = 0
+  for subtitle in subtitles:   
+    tts_engine.ProcessAndWriteFile(subtitle.text, temp_file_path)
+
+    audio_segment = AudioSegment.from_wav(temp_file_path)         
+
+    print(subtitle.start, subtitle.text)
+      
+    if prev_subtitle is None:
         silence_duration_ms = time_to_ms(subtitle.start)
-      else:
-        silence_duration_ms = time_to_ms(subtitle.start) - time_to_ms(prev_subtitle.start) - prev_audio_duration_ms
+    else:
+      silence_duration_ms = time_to_ms(subtitle.start) - time_to_ms(prev_subtitle.start) - prev_audio_duration_ms
 
-      audio_sum = audio_sum + AudioSegment.silent(duration=silence_duration_ms) + audio_segment                   
+    audio_sum = audio_sum + AudioSegment.silent(duration=silence_duration_ms) + audio_segment                   
       
-      prev_subtitle = subtitle
-      prev_audio_duration_ms = len(audio_segment)
+    prev_subtitle = subtitle
+    prev_audio_duration_ms = len(audio_segment)
 
     with open(os.path.splitext(path)[0] + '.wav', 'wb') as out_f:
       audio_sum.export(out_f, format='wav')      
