@@ -18,8 +18,10 @@ def generate_audio(path):
   audio_sum = AudioSegment.empty()   
   
   tempDir = "test/tempFolder"
+  if not os.path.isdir(tempDir):
+    os.mkdir(tempDir)
       
-  print('temporary directory', tempDir)            
+  print('Created temporary directory', tempDir)            
 
   temp_file_path = os.path.join(tempDir, "temp.wav")
   prev_subtitle = None
