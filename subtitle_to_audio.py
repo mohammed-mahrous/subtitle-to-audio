@@ -8,15 +8,13 @@ from TransformersProcessor import TransformersProcessor as tts
 def time_to_ms(time):
   return ((time.hour * 60 + time.minute) * 60 + time.second) * 1000 + time.microsecond / 1000
 
-def generate_audio(path, rate=200, voice_idx=0):  
+def generate_audio(path):  
   print("Generating audio file for {} with {}".format(path, "transformers"))      
 
   subtitles = parser.parse(path)
 
   tts_engine = tts()
   
-  # tts_engine.setProperty('voice', tts_engine.getProperty('voices')[voice_idx].id)
-
   audio_sum = AudioSegment.empty()   
   
   with tempfile.TemporaryDirectory() as tmpdirname:          
@@ -27,7 +25,6 @@ def generate_audio(path, rate=200, voice_idx=0):
     prev_audio_duration_ms = 0
     for subtitle in subtitles:   
       tts_engine.ProcessAndWriteFile(subtitle.text, temp_file_path)
-      # tts_engine.runAndWait()
 
       audio_segment = AudioSegment.from_wav(temp_file_path)         
 
@@ -49,10 +46,8 @@ def generate_audio(path, rate=200, voice_idx=0):
 if __name__ == "__main__":      
   arg_parser = argparse.ArgumentParser()
   arg_parser.add_argument("-p", "--path", help="subtitle file path", required=True)
-  arg_parser.add_argument("-r", "--rate", help="speech rate(words per minute)", type=int, default=150)
-  arg_parser.add_argument("-v", "--voice-idx", help="voice selection", type=int, default=0, choices=[0, 1])
   
   args = arg_parser.parse_args()
   
-  generate_audio(path=args.path, rate=args.rate, voice_idx=args.voice_idx)    
+  generate_audio(path=args.path)    
 
