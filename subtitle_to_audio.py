@@ -6,13 +6,11 @@ from pysubparser import parser
 from pydub import AudioSegment
 from TransformersProcessor import TransformersProcessor as tts
 
-speakersIds = [i for i in range(0,201)]
-
 def time_to_ms(time):
   return ((time.hour * 60 + time.minute) * 60 + time.second) * 1000 + time.microsecond / 1000
 
 
-def generate_audio(path:str, speakerId:int = 0):
+def generate_audio(path:str, speakerId:int = 10):
   outputDir = "output"
   if not os.path.isdir(outputDir):
     os.mkdir(outputDir)
@@ -61,8 +59,5 @@ if __name__ == "__main__":
   arg_parser.add_argument("-p", "--path", help="subtitle file path", required=True)
   
   args = arg_parser.parse_args()
-  for id in speakersIds:
-
-    generate_audio(path=args.path,speakerId=id)
-    print(f"finished for speaker {id}")  
+  generate_audio(path=args.path)
 
