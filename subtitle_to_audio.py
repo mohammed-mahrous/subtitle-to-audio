@@ -22,11 +22,13 @@ def generate_audio(path):
     os.mkdir(tempDir)
       
   print('Created temporary directory', tempDir)            
-
+  iterNum = 0
   temp_file_path = os.path.join(tempDir, "temp.wav")
   prev_subtitle = None
   prev_audio_duration_ms = 0
-  for subtitle in subtitles:   
+  for subtitle in subtitles:
+    iterNum = iterNum +1
+    temp_file_path = os.path.join(tempDir, f"temp{iterNum}.wav")   
     tts_engine.ProcessAndWriteFile(subtitle.text, temp_file_path)
 
     audio_segment = AudioSegment.from_wav(temp_file_path)         
