@@ -76,5 +76,5 @@ if __name__ == "__main__":
   args = arg_parser.parse_args()
   engine = tts()
 
-  generate_audio(path=args.path,speakerId=args.speakers,engine=engine)
+  generate_audio(path=args.path,speakerIds=args.speakers,engine=engine)
 
