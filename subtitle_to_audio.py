@@ -10,11 +10,11 @@ def time_to_ms(time):
   return ((time.hour * 60 + time.minute) * 60 + time.second) * 1000 + time.microsecond / 1000
 
 
-def generate_audio(path:str, engine:tts, speakerIds:list[int] = [10]):
+def generate_audio(path:str, engine:tts, speakerIds:list[int] = [7]):
   tts_engine = engine
   
   if( not speakerIds):
-    speakerIds = [10]
+    speakerIds = [7]
   
   outputDir = "output"
   
