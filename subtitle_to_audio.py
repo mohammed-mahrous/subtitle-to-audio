@@ -10,54 +10,73 @@ def time_to_ms(time):
   return ((time.hour * 60 + time.minute) * 60 + time.second) * 1000 + time.microsecond / 1000
 
 
-def generate_audio(path:str, speakerId:int = 10):
+def generate_audio(path:str, engine:tts, speakerIds:list[int] = [10]):
+  tts_engine = engine
+  
+  if( not speakerIds):
+    speakerIds = [10]
+  
   outputDir = "output"
+  
   if not os.path.isdir(outputDir):
     os.mkdir(outputDir)
+  
   fileName = Path(path).name.split('.')[0]
 
-  print("Generating audio file for {} with {}".format(path, "transformers"))      
-  currentSpeaker = f"speaker_{speakerId}"
-  subtitles = parser.parse(path)
+  for speakerId in speakerIds:
+
+    print("Generating audio file for {} with {} for speaker {}".format(path, "transformers", speakerId))      
+    currentSpeaker = f"speaker_{speakerId}"
+    
+    subtitles = parser.parse(path)      
+    audio_sum = AudioSegment.empty()
+
+    with tempfile.TemporaryDirectory() as tempDir:
+      print('Created temporary directory', tempDir)            
+      iterNum = 0
+      temp_file_path = os.path.join(tempDir, "temp.wav")
+      prev_subtitle = None
+      prev_audio_duration_ms = 0
+      for subtitle in subtitles:
+        iterNum = iterNum +1   
+        tts_engine.ProcessAndWriteFile(subtitle.text, temp_file_path, speakerId=speakerId)
+
+        audio_segment = AudioSegment.from_wav(temp_file_path)         
+
+        print(subtitle.start, subtitle.text)
+          
+        if prev_subtitle is None:
+            silence_duration_ms = time_to_ms(subtitle.start)
+        else:
+          silence_duration_ms = time_to_ms(subtitle.start) - time_to_ms(prev_subtitle.start) - prev_audio_duration_ms
+
+        audio_sum = audio_sum + AudioSegment.silent(duration=silence_duration_ms) + audio_segment                   
+          
+        prev_subtitle = subtitle
+        prev_audio_duration_ms = len(audio_segment)
 
 
-  tts_engine = tts()
-  
-  audio_sum = AudioSegment.empty()
+      outputFIle:str = os.path.join(outputDir, fileName) + f"_{currentSpeaker}.wav"
+      with open(outputFIle, 'wb') as out_f:
+        audio_sum.export(out_f, format='wav')      
 
-  with tempfile.TemporaryDirectory() as tempDir:
-    print('Created temporary directory', tempDir)            
-    iterNum = 0
-    temp_file_path = os.path.join(tempDir, "temp.wav")
-    prev_subtitle = None
-    prev_audio_duration_ms = 0
-    for subtitle in subtitles:
-      iterNum = iterNum +1   
-      tts_engine.ProcessAndWriteFile(subtitle.text, temp_file_path, speakerId=speakerId)
+def check_Ids(value:str):
+  values = value.split(",")
+  ivalues = list(map(int,values))
 
-      audio_segment = AudioSegment.from_wav(temp_file_path)         
-
-      print(subtitle.start, subtitle.text)
-        
-      if prev_subtitle is None:
-          silence_duration_ms = time_to_ms(subtitle.start)
-      else:
-        silence_duration_ms = time_to_ms(subtitle.start) - time_to_ms(prev_subtitle.start) - prev_audio_duration_ms
-
-      audio_sum = audio_sum + AudioSegment.silent(duration=silence_duration_ms) + audio_segment                   
-        
-      prev_subtitle = subtitle
-      prev_audio_duration_ms = len(audio_segment)
-
-
-    outputFIle:str = os.path.join(outputDir, fileName) + f"_{currentSpeaker}.wav"
-    with open(outputFIle, 'wb') as out_f:
-      audio_sum.export(out_f, format='wav')      
+  for ivalue in ivalues:
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+  return ivalues
 
 if __name__ == "__main__":      
   arg_parser = argparse.ArgumentParser()
-  arg_parser.add_argument("-p", "--path", help="subtitle file path", required=True)
+  arg_parser.add_argument("-p", "--path", help="subtitle file path", required=True,dest='path')
+  arg_parser.add_argument("-s", "--speakers", help="speaker ids numbers comma seperated", required=False, type=check_Ids, dest='speakers')
+  # arg_parser.add_argument("-o", "--output", help="speaker id", required=False, type=str, dest='output')
   
   args = arg_parser.parse_args()
-  generate_audio(path=args.path)
+  engine = tts()
+
+  generate_audio(path=args.path,speakerId=args.speakers,engine=engine)
 
